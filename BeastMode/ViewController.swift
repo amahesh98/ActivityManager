@@ -9,7 +9,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-    var tasks=["Go to the gym", "Create a wireframe", "Make an ERD"]
+    var tableData:[String]=[String]()
 
     
     @IBOutlet weak var taskTextField: UITextField!
@@ -24,14 +24,17 @@ class ViewController: UIViewController {
                 }
             }
             if !allSpaces{
-                tasks.append(newTask)
+                tableData.append(newTask)
             }
         }
         tableView.reloadData()
         taskTextField.text=""
+//        Hides the keyboard
+        taskTextField.resignFirstResponder()
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.delegate=self
         tableView.dataSource=self
         // Do any additional setup after loading the view, typically from a nib.
     }
@@ -43,14 +46,42 @@ class ViewController: UIViewController {
 
 
 }
-extension ViewController: UITableViewDataSource{
+extension UIViewController {
+    
+    func showToast(message : String) {
+        
+        let toastLabel = UILabel(frame: CGRect(x: self.view.frame.size.width/2 - 75, y: self.view.frame.size.height-100, width: 150, height: 35))
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        toastLabel.textColor = UIColor.white
+        toastLabel.textAlignment = .center;
+        toastLabel.font = UIFont(name: "Montserrat-Light", size: 12.0)
+        toastLabel.text = message
+        toastLabel.alpha = 1.0
+        toastLabel.layer.cornerRadius = 10;
+        toastLabel.clipsToBounds  =  true
+        self.view.addSubview(toastLabel)
+        UIView.animate(withDuration: 2.0, delay: 0.1, options: .curveEaseOut, animations: {
+            toastLabel.alpha = 0.0
+        }, completion: {(isCompleted) in
+            toastLabel.removeFromSuperview()
+        })
+    }
+    
+}
+extension ViewController: UITableViewDataSource, UITableViewDelegate{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section:Int)->Int{
-        return tasks.count
+        return tableData.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath:IndexPath)->UITableViewCell{
         let cell=tableView.dequeueReusableCell(withIdentifier:"MyCell", for: indexPath)
-        cell.textLabel?.text=tasks[indexPath.row]
+        cell.textLabel?.text=tableData[indexPath.row]
         return cell
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("Section: \(indexPath.section), Row: \(indexPath.row)")
+        tableData.remove(at: indexPath.row)
+        tableView.reloadData()
+        showToast(message: "Task completed!")
     }
 }
 
